@@ -1,0 +1,35 @@
+{% extends "base.html" %} 
+
+{% block title %}{{ plan.provider_name }} - {{ plan.plan_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <a href="{% url 'home' %}" class="btn btn-secondary mb-3">← Back</a>
+  <div class="card shadow-lg">
+    <div class="card-header bg-dark text-white">
+      <h4>{{ plan.provider_name }} - {{ plan.plan_name }}</h4>
+    </div>
+    <div class="card-body">
+      <ul class="list-group">
+        <li class="list-group-item"><strong>Price:</strong> {{ plan.price }}</li>
+        <li class="list-group-item"><strong>Hosting Type:</strong> {{ plan.hosting_type }}</li>
+        <li class="list-group-item"><strong>Storage:</strong> {{ plan.storage }}</li>
+        <li class="list-group-item"><strong>Bandwidth:</strong> {{ plan.bandwidth|default:"N/A" }}</li>
+        <li class="list-group-item"><strong>API Available:</strong> {{ plan.api_available|yesno:"Yes,No" }}</li>
+        <li class="list-group-item"><strong>Notes:</strong> {{ plan.notes|default:"N/A" }}</li>
+      </ul>
+
+      <div class="mt-3">
+        {% if plan.url %}
+          <a href="{{ plan.url }}" target="_blank" class="btn btn-success">Visit Provider Website</a>
+        {% endif %}
+
+        <!-- Weekly Chart Button -->
+        <a href="{% url 'provider_weekly_chart' plan.pk %}" class="btn btn-primary ms-2">
+        View Price Chart
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
