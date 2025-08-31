@@ -17,6 +17,7 @@
 
 
  celery -A hosting_project beat -l info
+ 
     Starts Celery Beat, which is the scheduler.
     It triggers periodic tasks (like cron jobs), e.g., every hour/day updates.
     Beat puts scheduled tasks into Redis → workers pick them up.
