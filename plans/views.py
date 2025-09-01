@@ -1,13 +1,9 @@
-import json
 import re
-from datetime import timedelta
 from django.shortcuts import get_object_or_404, render
 from django.utils.timezone import now
 from django.http import JsonResponse
 from collections import defaultdict
 from django.http import JsonResponse
-from datetime import datetime, timedelta
-
 from .models import HostingPlan, HostingPlanSnapshot
 from .tasks import scrape_hosting_plans_task
 
@@ -45,9 +41,11 @@ def home(request):
     })
 
 
+
 def provider_detail(request, pk):
     plan = get_object_or_404(HostingPlan, pk=pk)
     return render(request, "plans/provider_detail.html", {"plan": plan})
+
 
 
 def provider_price_chart(request, pk):
@@ -62,6 +60,7 @@ def provider_price_chart(request, pk):
 def run_scraper(request):
     scrape_hosting_plans_task.delay()
     return JsonResponse({"status": "started", "message": "Scraper task has been triggered!"})
+
 
 
 def plan_details(request, plan_id, index):
@@ -86,13 +85,7 @@ def plan_details(request, plan_id, index):
     return render(request, "plans/plan_detail_view.html", context)
 
 
-import re
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from django.utils.timezone import now, timedelta
-from plans.models import HostingPlan, HostingPlanSnapshot
 
-# views.py
 def price_history(request, plan_id):
     import re
     from django.utils.timezone import now, timedelta
@@ -128,13 +121,8 @@ def price_history(request, plan_id):
     return JsonResponse(data, safe=False)
 
 
-from django.shortcuts import render, get_object_or_404
-from .models import HostingPlanSnapshot
-
-# views.py
-from django.shortcuts import get_object_or_404, render
-from .models import HostingPlanSnapshot
 
 def snapshot_detail(request, snapshot_id):
     snapshot = get_object_or_404(HostingPlanSnapshot, id=snapshot_id)
     return render(request, "plans/snapshot_detail.html", {"snapshot": snapshot})
+

@@ -6,9 +6,9 @@ django.setup()
 from plans.models import HostingPlan
 
 data = [
-    {"provider_name": "Babal Host", "plan_name": "Starter", "hosting_type": "Shared", "price": "NPR 299/mo", "storage": "10GB", "bandwidth": "500GB", "api_available": True, "notes": "Local Nepali hosting", "url": "https://babal.host/"},
+    # {"provider_name": "Babal Host", "plan_name": "Starter", "hosting_type": "Shared", "price": "NPR 299/mo", "storage": "10GB", "bandwidth": "500GB", "api_available": True, "notes": "Local Nepali hosting", "url": "https://babal.host/"},
 
-    {"provider_name": "Himalayan Host ", "plan_name": "Economy", "hosting_type": "Shared", "price": "NPR 299/mo", "storage": "15GB", "bandwidth": "500GB", "api_available": False, "notes": "Good for beginners", "url": "https://www.himalayanhost.com/store/web-hosting-nepal"},
+    # {"provider_name": "Himalayan Host ", "plan_name": "Economy", "hosting_type": "Shared", "price": "NPR 299/mo", "storage": "15GB", "bandwidth": "500GB", "api_available": False, "notes": "Good for beginners", "url": "https://www.himalayanhost.com/store/web-hosting-nepal"},
 
     # {"provider_name": "WebHost Nepal", "plan_name": "Basic", "hosting_type": "Shared", "price": "NPR 399/mo", "storage": "20GB", "bandwidth": "1TB", "api_available": True, "notes": "Affordable for small websites", "url": "https://www.webhostnepal.com/hosting"},
 
@@ -41,8 +41,8 @@ data = [
 
 ]
 
-for item in data:
-    HostingPlan.objects.create(**item)
+# for item in data:
+#     HostingPlan.objects.create(**item)
 
 
-print("Data imported successfully........")
+# print("Data imported successfully........")

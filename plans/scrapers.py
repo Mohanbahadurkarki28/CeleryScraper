@@ -22,6 +22,7 @@ def clean_plan_name(plan_name):
     return plan_name.strip()[:20]
 
 
+
 def clean_price(price_text):
     """Extract a clean numeric price from any format like '$2.99/mo' or 'NPR 350 / month'."""
     if not price_text:
@@ -41,6 +42,7 @@ def normalize_price(value):
     value = str(value).strip()
     value = re.sub(r"[^\d.]", "", value)
     return Decimal(value) if value else None
+
 
 
 def scrape_host_plans(
@@ -107,6 +109,7 @@ def scrape_host_plans(
     return scraped_plans
 
 
+
 def save_scraped_plan(plan_data):
     """Save scraped plan to DB; snapshot only if price changed."""
     plan, created = HostingPlan.objects.get_or_create(
@@ -140,6 +143,7 @@ def save_scraped_plan(plan_data):
             plan.price = plan_data["price"]
             plan.save()
             logger.info(f"Price changed for {plan.plan_name} → Snapshot saved ✅")
+
 
 
 def scrape_all_providers():

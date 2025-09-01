@@ -9,6 +9,9 @@
 #TO run the celery
   celery -A hosting_project worker -l info -P solo
 
+#TO run in prallel
+  celery -A hosting_project worker -l info -P gevent -c 4
+
     Starts a Celery worker process.
     It listens for tasks from Django (via Redis) and executes them in the background.
     -A hosting_project → points to your Django project.
