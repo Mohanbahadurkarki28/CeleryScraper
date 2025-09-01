@@ -5,7 +5,7 @@ class HostingPlan(models.Model):
     provider_name = models.CharField(max_length=100)
     plan_name = models.CharField(max_length=100)
     hosting_type = models.CharField(max_length=50)
-    price = models.CharField(max_length=50)  
+    price = models.CharField(max_length=10, null=True, blank=True)    
     storage = models.CharField(max_length=50)
     bandwidth = models.CharField(max_length=50)
     api_available = models.BooleanField(default=False)
@@ -17,12 +17,9 @@ class HostingPlan(models.Model):
 
 
 class HostingPlanSnapshot(models.Model):
-    hosting_plan = models.ForeignKey(
-        HostingPlan, related_name="snapshots", on_delete=models.CASCADE
-    )
-    price = models.CharField(max_length=50)  
-    created_at = models.DateTimeField(auto_now_add=True)
-
+    hosting_plan = models.ForeignKey('HostingPlan', on_delete=models.CASCADE)
+    price = models.CharField(max_length=10, null=True, blank=True )
+    created_at = models.DateTimeField(auto_now_add=True) 
     class Meta:
         ordering = ["-created_at"]
 

@@ -1,0 +1,136 @@
+{% extends "plans/base.html" %}
+{% block content %}
+<div class="container my-5">
+
+    <!-- Heading -->
+    <h2 class="text-center fw-bold mb-4">
+        Price History - {{ plan.plan_name }} ({{ plan.provider_name }})
+    </h2>
+
+    <!-- Time Range Selector -->
+    <div class="mb-4 text-center">
+        <label for="time-range" class="form-label fw-semibold me-2">Select Time Range:</label>
+        <select id="time-range" class="form-select d-inline-block w-auto shadow-sm" onchange="loadChart()">
+            <option value="7d">Last 7 Days</option>
+            <option value="10d">Last 10 Days</option>
+            <option value="15d">Last 15 Days</option>
+            <option value="1m">Last 1 Month</option>
+            <option value="3m">Last 3 Months</option>
+            <option value="6m">Last 6 Months</option>
+            <option value="1y">Last 1 Year</option>
+        </select>
+    </div>
+
+    <!-- Chart Card -->
+    <div class="card shadow-lg border-0 p-4" style="border-radius: 15px;">
+        <canvas id="priceChart" height="120"></canvas>
+    </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+let priceChart = null;
+
+async function loadChart() {
+    const range = document.getElementById("time-range").value;
+
+    // Fetch data
+    const response = await fetch(`/plans/{{ plan.id }}/price-history/?range=${range}`);
+    const data = await response.json();
+
+    // Group data by date (latest price per day)
+    const groupedData = {};
+    data.forEach(item => {
+        const date = new Date(item.created_at).toISOString().split("T")[0]; // YYYY-MM-DD
+        groupedData[date] = { price: parseFloat(item.price), id: item.id };
+    });
+
+    // Convert grouped data into arrays
+    const labels = Object.keys(groupedData).sort();
+    const prices = labels.map(date => groupedData[date].price);
+    const snapshotIds = labels.map(date => groupedData[date].id);
+
+    // Format dates for labels (e.g., "01 Sep")
+    const formattedLabels = labels.map(date =>
+        new Date(date).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short"
+        })
+    );
+
+    const ctx = document.getElementById('priceChart').getContext('2d');
+
+    // Destroy old chart before creating a new one
+    if (priceChart) {
+        priceChart.destroy();
+    }
+
+    // ✅ Create new line chart with clickable points
+    priceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: formattedLabels,
+            datasets: [{
+                label: 'Price (NPR)',
+                data: prices,
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0, 123, 255, 0.3)',
+                tension: 0.3,
+                fill: true,
+                pointBackgroundColor: '#007bff',
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            return `NPR ${context.formattedValue}`;
+                        }
+                    }
+                }
+            },
+            onClick: function (event, elements) {
+                if (elements.length > 0) {
+                    const index = elements[0].index;
+                    const snapshotId = snapshotIds[index];
+                    window.location.href = `/plans/snapshot/${snapshotId}/`;
+                }
+            },
+            scales: {
+                x: {
+                    title: { display: true, text: 'Date' }
+                },
+                y: {
+                    title: { display: true, text: 'Price (NPR)' }
+                }
+            }
+        }
+    });
+}
+
+// Load chart initially
+document.addEventListener("DOMContentLoaded", loadChart);
+</script>
+
+
+<!-- Custom CSS -->
+<style>
+    .container {
+        max-width: 900px;
+    }
+    .card {
+        background-color: #fff;
+        border-radius: 15px;
+    }
+    canvas {
+        max-height: 400px;
+    }
+</style>
+{% endblock %}

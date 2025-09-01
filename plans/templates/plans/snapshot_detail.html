@@ -1,0 +1,12 @@
+{% extends "plans/base.html" %}
+{% block content %}
+<div class="container my-5">
+    <div class="card shadow-lg p-4">
+        <h3 class="mb-3">Snapshot Details</h3>
+        <p><strong>Plan:</strong> {{ snapshot.hosting_plan.plan_name }}</p>
+        <p><strong>Price:</strong> NPR {{ snapshot.price }}</p>
+        <p><strong>Date:</strong> {{ snapshot.created_at }}</p>
+        <a href="javascript:history.back()" class="btn btn-primary mt-3">Back</a>
+    </div>
+</div>
+{% endblock %}

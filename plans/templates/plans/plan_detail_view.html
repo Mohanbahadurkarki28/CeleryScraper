@@ -1,0 +1,26 @@
+{% extends "plans/base.html" %}
+
+
+{% block content %}
+<div class="container mt-4">
+  <a href="{% url 'home' %}" class="btn btn-secondary mb-3">← Back</a>
+
+  <div class="card shadow-lg">
+    <div class="card-header bg-dark text-white">
+      <h4>{{ plan.provider_name }} - {{ plan.plan_name }}</h4>
+    </div>
+    <div class="card-body">
+      {% if error %}
+        <p class="text-danger">{{ error }}</p>
+      {% else %}
+        <ul class="list-group">
+          <li class="list-group-item"><strong>Date:</strong> {{ date }}</li>
+          <li class="list-group-item"><strong>Price:</strong> ${{ price }}</li>
+          <li class="list-group-item"><strong>Package:</strong> {{ pkg }}</li>
+          <li class="list-group-item"><strong>Features:</strong> {{ features }}</li>
+        </ul>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

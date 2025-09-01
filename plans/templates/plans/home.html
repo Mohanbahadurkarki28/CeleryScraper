@@ -26,48 +26,82 @@
             box-shadow: 0px 4px 15px rgba(0,0,0,0.2);
             transform: scale(1.03);
         }
-        .card-buttons {
-            margin-top: 10px;
+        .provider-plans {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        #scrapeBtn.loading {
-            pointer-events: none;
-            opacity: 0.7;
+        .plan-card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #fff;
+        }
+        .back-home-btn {
+            margin-top: 15px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="my-4 text-center"><b>Top Hosting Providers Plans</b></h1>
+        <h1 class="my-4 text-center"><b>Top Hosting Providers</b></h1>
 
         <!-- Search Form -->
         <div class="row mb-4">
             <div class="col-md-6 offset-md-3 d-flex gap-2">
                 <form method="get" class="d-flex flex-grow-1">
-                    <input type="text" name="q" class="form-control me-2" placeholder="Search hosting plans..." value="{{ request.GET.q }}">
+                    <input type="text" name="q" class="form-control me-2"
+                           placeholder="Search hosting plans..." value="{{ query }}">
                     <button class="btn btn-primary" type="submit">Search</button>
                 </form>
-
-                <!-- Scrape Now button -->
-                <button id="scrapeBtn" class="btn btn-warning" type="button">Scrape Now</button>
             </div>
         </div>
 
         <div class="text-center">
-            {% for plan in plans %}
+            {% for provider, plans in providers.items %}
+                <!-- Provider Card -->
                 <div class="card">
                     <div class="card-body text-center">
-                        <img src="{% static 'plans/logos/' %}{{ plan.provider_name|lower|cut:' ' }}.png" alt="{{ plan.provider_name }} Logo">
-                        <h6>{{ plan.provider_name }} - {{ plan.plan_name }}</h6>
-                        <p>Type: {{ plan.hosting_type }}</p>
-                        <p>Min-Price: {{ plan.price }}</p>
-                        <p>Storage: {{ plan.storage }}</p>
+                        <img src="{% static 'plans/logos/' %}{{ provider|lower|cut:' ' }}.png" alt="{{ provider }} Logo">
+                        <h5>{{ provider }}</h5>
+                        <p>Total Plans: {{ plans|length }}</p>
+                        <button class="btn btn-primary btn-sm view-plans" data-target="plans-{{ provider|slugify }}">
+                            View Plans
+                        </button>
+                    </div>
+                </div>
 
-                        <div class="card-buttons">
+                <!-- Plans for this specific provider -->
+                <div id="plans-{{ provider|slugify }}" class="provider-plans">
+                    <h4 class="text-center">{{ provider }} Plans</h4>
+                    <hr>
+                    {% for plan in plans %}
+                        <div class="plan-card">
+                            <h6>{{ plan.plan_name }}</h6>
+                            <p>Type: {{ plan.hosting_type }}</p>
+                            <p>Price: {{ plan.price }}</p>
+                            <p>Storage: {{ plan.storage }}</p>
                             {% if plan.url %}
-                                <a href="{{ plan.url }}" target="_blank" class="btn btn-success btn-sm">site link</a>
+                                <a href="{{ plan.url }}" target="_blank" class="btn btn-success btn-sm">Site Link</a>
                             {% endif %}
-                            <a href="{% url 'provider_weekly_chart' plan.pk %}" class="btn btn-primary btn-sm ms-2">View Price Chart</a>
+                            <a href="{% url 'provider_price_chart' plan.pk %}" class="btn btn-primary btn-sm ms-2">
+                                 View Price Chart
+                            </a>
+
                         </div>
+                    {% endfor %}
+                    
+                    <!-- Back to Home Button -->
+                    <div class="text-center back-home-btn">
+                        <button class="btn btn-secondary back-home">← Back to Home</button>
                     </div>
                 </div>
             {% empty %}
@@ -77,28 +111,36 @@
     </div>
 
     <script>
-    const scrapeBtn = document.getElementById("scrapeBtn");
+        // Toggle plans for specific provider
+        document.querySelectorAll(".view-plans").forEach(button => {
+            button.addEventListener("click", function() {
+                const target = document.getElementById(this.dataset.target);
 
-    scrapeBtn.addEventListener("click", function() {
-        scrapeBtn.classList.add("loading");
-        scrapeBtn.innerText = "Scraping...";
+                // Hide all plans first
+                document.querySelectorAll(".provider-plans").forEach(section => {
+                    section.style.display = "none";
+                });
 
-        fetch("{% url 'run_scraper' %}")
-        .then(response => response.json())
-        .then(data => {
-            alert(data.message);
-            scrapeBtn.classList.remove("loading");
-            scrapeBtn.innerText = "Scrape Now";
+                // Show only the clicked provider's plans
+                target.style.display = "block";
 
-            // Optional: auto refresh after 5s so new data shows
-            setTimeout(() => location.reload(), 5000);
-        })
-        .catch(err => {
-            alert("❌ Request failed: " + err);
-            scrapeBtn.classList.remove("loading");
-            scrapeBtn.innerText = "Scrape Now";
+                // Scroll to the plans section
+                target.scrollIntoView({ behavior: "smooth" });
+            });
         });
-    });
+
+        // Back to home button
+        document.querySelectorAll(".back-home").forEach(button => {
+            button.addEventListener("click", function() {
+                // Hide all provider plans
+                document.querySelectorAll(".provider-plans").forEach(section => {
+                    section.style.display = "none";
+                });
+
+                // Scroll back to the top
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            });
+        });
     </script>
 </body>
 </html>

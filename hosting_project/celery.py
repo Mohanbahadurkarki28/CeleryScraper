@@ -10,7 +10,7 @@ app.autodiscover_tasks()
 
 # --- Add periodic task schedule here ---
 app.conf.beat_schedule = {
-    'run-my-task-every-hour': {
+    'scrape-all-hosting-plans': {
         'task': 'plans.tasks.scrape_hosting_plans_task', 
         'schedule': crontab(minute=0, hour='*'),
     },

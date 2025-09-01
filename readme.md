@@ -25,3 +25,9 @@
 
 #To update manually
     python manage.py update_plans
+
+
+from plans.tasks import scrape_hosting_plans_task
+task = scrape_hosting_plans_task.delay()
+print(task.id)
+

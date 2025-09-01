@@ -4,6 +4,8 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 import logging
+from decimal import Decimal, InvalidOperation
+import re
 
 from .models import HostingPlan, HostingPlanSnapshot
 
@@ -20,11 +22,33 @@ def clean_plan_name(plan_name):
     return plan_name.strip()[:20]
 
 
+def clean_price(price_text):
+    """Extract a clean numeric price from any format like '$2.99/mo' or 'NPR 350 / month'."""
+    if not price_text:
+        return Decimal("0.00")
+    price_text = price_text.replace(",", "")  # Remove thousands separator
+    price_match = re.search(r"(\d+(\.\d{1,2})?)", price_text)
+    if price_match:
+        try:
+            return Decimal(price_match.group(1))
+        except InvalidOperation:
+            return Decimal("0.00")
+    return Decimal("0.00")
+
+
+
+def normalize_price(value):
+    value = str(value).strip()
+    value = re.sub(r"[^\d.]", "", value)
+    return Decimal(value) if value else None
+
+
 def scrape_host_plans(
     provider_name,
     url,
     price_selector=".price, .plan, .payment, .hosting, .hostingplan, .priceplan",
 ):
+    """Scrapes hosting plans from a provider's URL."""
     scraped_plans = []
     logger.info(f"Starting scrape for {provider_name}...")
 
@@ -57,12 +81,15 @@ def scrape_host_plans(
                     except NoSuchElementException:
                         continue
 
+                # Get and clean price
                 price_text = price_el.text.strip()
+                clean_price_value = clean_price(price_text)
+
                 plan_data = {
                     "provider_name": provider_name,
                     "plan_name": plan_name or "Unknown Plan",
                     "hosting_type": "Cloud Hosting",
-                    "price": price_text.split('\n')[0] if price_text else "Look inside",
+                    "price": clean_price_value,
                     "storage": "Unlimited",
                     "bandwidth": "Unlimited",
                     "url": url,
@@ -96,13 +123,23 @@ def save_scraped_plan(plan_data):
         },
     )
 
-    # Only add snapshot if price changed
-    latest = HostingPlanSnapshot.objects.filter(hosting_plan=plan).order_by('-created_at').first()
-    if not latest or latest.price != plan_data["price"]:
+    if created:
+        # New plan → always add initial snapshot
         HostingPlanSnapshot.objects.create(
             hosting_plan=plan,
             price=plan_data["price"]
         )
+    else:
+        # Existing plan → check if price changed
+        latest_snapshot = HostingPlanSnapshot.objects.filter(hosting_plan=plan).order_by('-created_at').first()
+        if not latest_snapshot or latest_snapshot.price != plan_data["price"]:
+            HostingPlanSnapshot.objects.create(
+                hosting_plan=plan,
+                price=plan_data["price"]
+            )
+            plan.price = plan_data["price"]
+            plan.save()
+            logger.info(f"Price changed for {plan.plan_name} → Snapshot saved ✅")
 
 
 def scrape_all_providers():
